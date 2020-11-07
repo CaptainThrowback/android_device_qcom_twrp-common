@@ -242,11 +242,11 @@ fi
 recpath="/dev/block/bootdevice/by-name/recovery$suffix"
 
 if [ -e "$recpath" ]; then
-	log_print 2 "Device has recovery partition! SETPATCH=false"
+	log_print 2 "Device has recovery partition!"
 	# This should only be set to true for devices with recovery-in-boot
 	SETPATCH=false
 else
-	log_print 2 "No recovery partition found. SETPATCH=true"
+	log_print 2 "No recovery partition found."
 	SETPATCH=true
 fi
 
@@ -259,9 +259,6 @@ if [ "$sdkver" -ge 26 ]; then
 		update_default_values "$osver" "$osver_orig" "OS version" "ro.build.version.release" osver_default_value
 		update_default_values "$patchlevel" "$patchlevel_orig" "Security Patch Level" "ro.build.version.security_patch" patchlevel_default_value
 	else
-		if [ ! "$SETPATCH" = true ]; then
-			SETPATCH=true
-		fi
 		log_print 1 "SETPATCH=$SETPATCH"
 		log_print 2 "Build tree is Oreo or above. Proceed with setting props..."
 
