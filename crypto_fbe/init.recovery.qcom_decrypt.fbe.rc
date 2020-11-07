@@ -1,4 +1,4 @@
-import /init.recovery.services_fbe.rc
+import /init.recovery.services.qcom_decrypt.fbe.rc
 
 on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
     install_keyring
