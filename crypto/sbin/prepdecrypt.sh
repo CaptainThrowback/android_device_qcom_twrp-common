@@ -5,8 +5,6 @@
 SCRIPTNAME="PrepDecrypt"
 LOGFILE=/tmp/recovery.log
 
-# This should be set to true for devices with recovery-in-boot
-SETPATCH=false
 #
 # Default TWRP values for PLATFORM_VERSION and PLATFORM_SECURITY_PATCH
 #
@@ -21,7 +19,7 @@ patchlevel_twrp="2099-12-31"
 # 0 Errors only
 # 1 Errors and Information
 # 2 Errors, Information, and Debugging
-__VERBOSE=1
+__VERBOSE=2
 
 # Exit codes:
 # 0 Success
@@ -98,13 +96,13 @@ finish_error()
 
 osver_default_value()
 {
-	osver_default=$(grep "$1" /$DEFAULTPROP)
+	osver_default=$(grep "$1" /"$DEFAULTPROP")
 	log_print 2 "$DEFAULTPROP value: $osver_default"
 }
 
 patchlevel_default_value()
 {
-	patchlevel_default=$(grep "$1" /$DEFAULTPROP)
+	patchlevel_default=$(grep "$1" /"$DEFAULTPROP")
 	log_print 2 "$DEFAULTPROP value: $patchlevel_default"
 	finish
 }
@@ -227,6 +225,31 @@ if [ "$sdkver" -lt 29 ]; then
 	fi
 fi
 
+ab_device=$(getprop ro.build.ab_update)
+
+if [ -n "$ab_device" ]; then
+	log_print 2 "A/B device detected! Finding current boot slot..."
+	suffix=$(getprop ro.boot.slot_suffix)
+	if [ -z "$suffix" ]; then
+		suf=$(getprop ro.boot.slot)
+		if [ -n "$suf" ]; then
+			suffix="_$suf"
+		fi
+	fi
+	log_print 2 "Current boot slot: $suffix"
+fi
+
+recpath="/dev/block/bootdevice/by-name/recovery$suffix"
+
+if [ -e "$recpath" ]; then
+	log_print 2 "Device has recovery partition! SETPATCH=false"
+	# This should only be set to true for devices with recovery-in-boot
+	SETPATCH=false
+else
+	log_print 2 "No recovery partition found. SETPATCH=true"
+	SETPATCH=true
+fi
+
 if [ "$sdkver" -ge 26 ]; then
 	is_fastboot_boot=$(getprop ro.boot.fastboot)
 	skip_initramfs_present=$(grep skip_initramfs /proc/cmdline)
@@ -244,13 +267,6 @@ if [ "$sdkver" -ge 26 ]; then
 
 		BUILDPROP=build.prop
 		TEMPSYS=/s
-		suffix=$(getprop ro.boot.slot_suffix)
-		if [ -z "$suffix" ]; then
-			suf=$(getprop ro.boot.slot)
-			if [ -n "$suf" ]; then
-				suffix="_$suf"
-			fi
-		fi
 		syspath="/dev/block/bootdevice/by-name/system$suffix"
 
 		if [ "$sdkver" -ge 29 ]; then
