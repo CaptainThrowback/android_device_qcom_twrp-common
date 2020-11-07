@@ -22,19 +22,13 @@ ifeq ($(BOARD_USES_QCOM_FBE_DECRYPTION),true)
     include $(CLEAR_VARS)
 
     LOCAL_MODULE := qcom_decrypt_fbe
-    LOCAL_MODULE_TAGS := optional eng
+    LOCAL_MODULE_TAGS := optional
     LOCAL_MODULE_CLASS := ETC
-    LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+    LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/system/bin
     LOCAL_REQUIRED_MODULES := qcom_decrypt
 
     LOCAL_POST_INSTALL_CMD += \
-        cp $(LOCAL_PATH)/crypto_fbe/init.recovery* $(TARGET_ROOT_OUT) && \
-        cp -Ra $(LOCAL_PATH)/crypto_fbe/. $(TARGET_RECOVERY_ROOT_OUT);
-
-    ifeq ($(BOARD_BUILD_SYSTEM_ROOT_IMAGE),true)
-        LOCAL_POST_INSTALL_CMD += \
-            cp -Ra $(LOCAL_PATH)/crypto_fbe/system $(TARGET_RECOVERY_ROOT_OUT)/system_root/;
-    endif
+        cp $(LOCAL_PATH)/crypto_fbe/init.recovery* $(TARGET_ROOT_OUT);
 
     include $(BUILD_PHONY_PACKAGE)
 endif
@@ -44,9 +38,9 @@ ifeq ($(BOARD_USES_QCOM_DECRYPTION),true)
     include $(CLEAR_VARS)
 
     LOCAL_MODULE := qcom_decrypt
-    LOCAL_MODULE_TAGS := optional eng
+    LOCAL_MODULE_TAGS := optional
     LOCAL_MODULE_CLASS := ETC
-    LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/sbin
+    LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/system/bin
     LOCAL_REQUIRED_MODULES := teamwin
 
     # Cannot send to TARGET_RECOVERY_ROOT_OUT since build system wipes init*.rc
