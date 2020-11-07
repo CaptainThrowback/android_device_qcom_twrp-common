@@ -19,7 +19,7 @@ patchlevel_twrp="2099-12-31"
 # 0 Errors only
 # 1 Errors and Information
 # 2 Errors, Information, and Debugging
-__VERBOSE=2
+__VERBOSE=1
 
 # Exit codes:
 # 0 Success
