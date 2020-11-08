@@ -15,3 +15,10 @@ PRODUCT_PACKAGES_ENG += \
     qcom_decrypt_fbe
 ```
 Only the `qcom_decrypt` package should be included for FDE devices, and both should be included for FBE devices.
+
+To import the decryption rc files into your device tree, add this line to your `init.recovery.$(ro.hardware).rc` file:
+`import /init.recovery.qcom_decrypt.rc`
+
+If you forget to add the above import, the build tree will add it for you if it can find your init.recovery.qcom.rc file. Otherwise, there will be a warning near the end of the build system output that the import needed to be added.
+
+If for some reason these scripts do not work for you, increase the loglevel to 2 in prepdecrypt.sh and review the additional logging in the recovery.log to see where the process is failing.
