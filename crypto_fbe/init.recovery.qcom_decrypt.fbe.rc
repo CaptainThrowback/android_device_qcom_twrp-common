@@ -35,15 +35,15 @@ service gatekeeper-1-0 /sbin/android.hardware.gatekeeper@1.0-service
     oneshot
     seclabel u:r:recovery:s0
 
-service gatekeeper-1-0-qti /sbin/android.hardware.gatekeeper@1.0-service-qti
+service gatekeeper-1-0-qti /system/bin/android.hardware.gatekeeper@1.0-service-qti
     user root
     group root
-    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib:/sbin:/system/lib64:/system/lib
+    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib:/system/lib64:/system/lib:/sbin
     disabled
     oneshot
     seclabel u:r:recovery:s0
 
-service keystore_auth /sbin/keystore_auth
+service keystore_auth /system/bin/keystore_auth
     oneshot
     user system
     group root
@@ -51,7 +51,7 @@ service keystore_auth /sbin/keystore_auth
     seclabel u:r:recovery:s0
 
 # keystore is started and stopped on demand by TWRP
-service keystore /sbin/keystore /tmp/misc/keystore
+service keystore /system/bin/keystore /tmp/misc/keystore
     user root
     group root drmrpc readproc log
     disabled
