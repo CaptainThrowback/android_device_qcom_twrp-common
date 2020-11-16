@@ -15,6 +15,26 @@
 
 LOCAL_PATH := $(call my-dir)
 
+# Dummy file to apply post-install patch for tzdata
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := tzdata_twrp
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_CLASS := ETC
+LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)/system/bin
+LOCAL_REQUIRED_MODULES := tzdata
+
+ifeq ($(BOARD_BUILD_SYSTEM_ROOT_IMAGE),true)
+    LOCAL_POST_INSTALL_CMD += \
+        mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system_root/system/usr/share/zoneinfo; \
+        cp -f $(TARGET_OUT)/usr/share/zoneinfo/tzdata $(TARGET_RECOVERY_ROOT_OUT)/system_root/system/usr/share/zoneinfo/;
+else
+    LOCAL_POST_INSTALL_CMD += \
+        mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/usr/share/zoneinfo; \
+        cp -f $(TARGET_OUT)/usr/share/zoneinfo/tzdata $(TARGET_RECOVERY_ROOT_OUT)/system/usr/share/zoneinfo/;
+endif
+include $(BUILD_PHONY_PACKAGE)
+
 ifeq ($(BOARD_USES_QCOM_FBE_DECRYPTION),true)
     BOARD_USES_QCOM_DECRYPTION := true
 
@@ -24,12 +44,14 @@ ifeq ($(BOARD_USES_QCOM_FBE_DECRYPTION),true)
     LOCAL_MODULE := qcom_decrypt_fbe
     LOCAL_MODULE_TAGS := optional
     LOCAL_MODULE_CLASS := ETC
-    LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/system/bin
+    LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)/system/bin
     LOCAL_REQUIRED_MODULES := qcom_decrypt
 
+    # Cannot send to TARGET_RECOVERY_ROOT_OUT since build system wipes init*.rc
+    # during ramdisk creation and only allows init.recovery.*.rc files to be copied
+    # from TARGET_ROOT_OUT thereafter
     LOCAL_POST_INSTALL_CMD += \
-        cp $(LOCAL_PATH)/crypto_fbe/init.recovery* $(TARGET_ROOT_OUT);
-
+        cp -f $(LOCAL_PATH)/crypto_fbe/init.recovery* $(TARGET_ROOT_OUT);
     include $(BUILD_PHONY_PACKAGE)
 endif
 
@@ -40,14 +62,14 @@ ifeq ($(BOARD_USES_QCOM_DECRYPTION),true)
     LOCAL_MODULE := qcom_decrypt
     LOCAL_MODULE_TAGS := optional
     LOCAL_MODULE_CLASS := ETC
-    LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/system/bin
+    LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)/system/bin
     LOCAL_REQUIRED_MODULES := teamwin
 
     # Cannot send to TARGET_RECOVERY_ROOT_OUT since build system wipes init*.rc
     # during ramdisk creation and only allows init.recovery.*.rc files to be copied
     # from TARGET_ROOT_OUT thereafter
     LOCAL_POST_INSTALL_CMD += \
-        $(hide) if [ -e $(TARGET_ROOT_OUT)/init.recovery.qcom.rc ]; then \
+        if [ -e $(TARGET_ROOT_OUT)/init.recovery.qcom.rc ]; then \
         grep -qF 'init.recovery.qcom_decrypt.rc' $(TARGET_ROOT_OUT)/init.recovery.qcom.rc || \
         echo -e '\nimport /init.recovery.qcom_decrypt.rc' >> $(TARGET_ROOT_OUT)/init.recovery.qcom.rc; \
         elif [ -e $(TARGET_RECOVERY_ROOT_OUT)/init.recovery.qcom.rc ]; then \
@@ -57,15 +79,12 @@ ifeq ($(BOARD_USES_QCOM_DECRYPTION),true)
         grep -qF 'init.recovery.qcom_decrypt.rc' device/$(PRODUCT_BRAND)/$(TARGET_DEVICE)/recovery/root/init.recovery.qcom.rc || \
         echo -e '\nimport /init.recovery.qcom_decrypt.rc' >> device/$(PRODUCT_BRAND)/$(TARGET_DEVICE)/recovery/root/init.recovery.qcom.rc; \
         else echo -e '\n*** init.recovery.qcom.rc not found ***\nYou will need to manually add the import for init.recovery.qcom_decrypt.rc to your init.recovery.(ro.hardware).rc file!!\n'; fi; \
-        cp -Ra $(LOCAL_PATH)/tzdata/. $(TARGET_RECOVERY_ROOT_OUT); \
-        cp $(LOCAL_PATH)/crypto/init.recovery* $(TARGET_ROOT_OUT); \
+        cp -f $(LOCAL_PATH)/crypto/init.recovery* $(TARGET_ROOT_OUT); \
         cp -Ra $(LOCAL_PATH)/crypto/. $(TARGET_RECOVERY_ROOT_OUT);
 
     ifeq ($(BOARD_BUILD_SYSTEM_ROOT_IMAGE),true)
         LOCAL_POST_INSTALL_CMD += \
-            cp -Ra $(LOCAL_PATH)/tzdata $(TARGET_RECOVERY_ROOT_OUT)/system_root/; \
             cp -Ra $(LOCAL_PATH)/crypto/system $(TARGET_RECOVERY_ROOT_OUT)/system_root/;
     endif
-
     include $(BUILD_PHONY_PACKAGE)
 endif
