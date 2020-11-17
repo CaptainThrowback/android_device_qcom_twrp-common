@@ -1,7 +1,7 @@
 on init
     start servicemanager
 
-service servicemanager /system/bin/servicemanager
+service servicemanager /sbin/servicemanager
     user root
     group root readproc
     disabled
